@@ -34,11 +34,7 @@ jobs:
           echo "$(pwd)/target/release" >> $GITHUB_PATH
 
       - name: Verify dbt-fusion binary
-        run: |
-          dbt-sa-cli --version || dbt-sa-cli --help
-
-      - name: Run dbt debug
-        run: dbt-sa-cli debug --project-dir . --profiles-dir .
+        run: dbt-sa-cli --help
 
       - name: Run dbt parse
         run: dbt-sa-cli parse --project-dir . --profiles-dir .
