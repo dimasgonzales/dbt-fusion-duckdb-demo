@@ -17,7 +17,8 @@ models:
         description: "Order status (pending, completed, cancelled)"
         tests:
           - accepted_values:
-              values: ['pending', 'completed', 'cancelled']
+              arguments:
+                values: ['pending', 'completed', 'cancelled']
 
   - name: dim_customers
     description: "Customer dimension with aggregated order metrics"
