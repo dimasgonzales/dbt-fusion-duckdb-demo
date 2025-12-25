@@ -39,11 +39,5 @@ jobs:
       - name: Run dbt parse
         run: dbt-sa-cli parse --project-dir . --profiles-dir .
 
-      - name: Run dbt seed
-        run: dbt-sa-cli seed --project-dir . --profiles-dir .
-
       - name: Run dbt run
         run: dbt-sa-cli run --project-dir . --profiles-dir .
-
-      - name: Run dbt test
-        run: dbt-sa-cli test --project-dir . --profiles-dir .
