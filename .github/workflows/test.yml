@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-8-cores
     
     steps:
       - name: Checkout demo repo
@@ -17,20 +17,29 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: dbt-fusion
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
 
       - name: Clone dbt-fusion fork
         run: |
           git clone --depth 1 https://github.com/dimasgonzales/dbt-fusion.git dbt-fusion
 
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: dbt-fusion
+
       - name: Build dbt-fusion
         working-directory: dbt-fusion
+        env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: "sccache"
         run: |
           cargo build --release -p dbt-sa-cli
           echo "$(pwd)/target/release" >> $GITHUB_PATH
+
+      - name: Show sccache stats
+        run: sccache --show-stats
 
       - name: Verify dbt-fusion binary
         run: |
