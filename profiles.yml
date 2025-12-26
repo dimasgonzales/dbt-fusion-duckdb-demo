@@ -3,5 +3,5 @@ duckdb_demo:
   outputs:
     dev:
       type: duckdb
-      path: 'demo.duckdb'
+      path: './demo.duckdb'
       threads: 4
