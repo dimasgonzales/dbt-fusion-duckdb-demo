@@ -10,11 +10,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Combined job to reduce redundant clone/build operations
-  test:
-    name: Build & Test
+  # Build and run integration tests
+  build-and-test:
+    name: Build & Integration Test
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     
     steps:
       - name: Checkout demo repo
@@ -43,16 +43,11 @@ jobs:
         working-directory: dbt-fusion
         run: |
           cargo build --release -p dbt-sa-cli 2>&1 | tee build.log
-          # Check for warnings in dbt-sa-cli specifically
           if grep -q "warning:.*crates/dbt-sa-cli" build.log; then
             echo "::error::dbt-sa-cli has warnings"
             exit 1
           fi
           echo "$(pwd)/target/release" >> $GITHUB_PATH
-
-      - name: Run doc tests (scoped to DuckDB changes)
-        working-directory: dbt-fusion
-        run: cargo test --doc -p dbt-adapter -p dbt-sa-cli
 
       - name: Verify dbt-fusion binary
         run: dbt-sa-cli --help
@@ -62,3 +57,37 @@ jobs:
 
       - name: Run dbt run
         run: dbt-sa-cli run --project-dir . --profiles-dir . --select simple_test
+
+  # Run doc tests and unit tests (share test profile cache)
+  tests:
+    name: Doc Tests & Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout demo repo
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Clone dbt-fusion fork
+        run: |
+          git clone --depth 1 https://github.com/dimasgonzales/dbt-fusion.git dbt-fusion
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: dbt-fusion
+          cache-on-failure: true
+
+      - name: Run doc tests
+        working-directory: dbt-fusion
+        run: cargo test --doc -p dbt-adapter -p dbt-sa-cli
+
+      - name: Run unit tests (scoped to DuckDB packages)
+        working-directory: dbt-fusion
+        run: cargo nextest run -p dbt-adapter -p dbt-sa-cli -p dbt-auth -p dbt-schemas -p dbt-loader
