@@ -50,6 +50,10 @@ jobs:
           fi
           echo "$(pwd)/target/release" >> $GITHUB_PATH
 
+      - name: Run doc tests (scoped to DuckDB changes)
+        working-directory: dbt-fusion
+        run: cargo test --doc -p dbt-adapter -p dbt-sa-cli
+
       - name: Verify dbt-fusion binary
         run: dbt-sa-cli --help
 
