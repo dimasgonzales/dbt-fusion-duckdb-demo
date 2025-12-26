@@ -1,0 +1,5 @@
+dbt_internal_packages
+demo.duckdb
+logs
+target
+dbt_internal_packages/
